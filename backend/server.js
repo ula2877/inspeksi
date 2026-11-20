@@ -1,0 +1,77 @@
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
+const helmet = require("helmet");
+
+const app = express();
+
+app.disable("x-powered-by");
+
+// Middleware
+app.use(helmet());
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Static folder
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+app.use("/api/upload", require("./src/routes/uploadRoutes"));
+
+// =====================
+// ROUTES
+// =====================
+app.use("/api/damage-reports", require("./src/routes/damageReportRoutes"));
+app.use('/api/auth', require('./src/routes/authRoutes'));
+app.use('/api/users', require('./src/routes/userRoutes'));  
+app.use('/api/labs', require('./src/routes/laboratoryRoutes'));
+app.use('/api/items', require('./src/routes/itemRoutes'));
+app.use('/api/inspections', require('./src/routes/inspectionDetailRoutes'));
+app.use('/api/export', require('./src/routes/exportRoutes'));
+app.use('/api/criteria', require('./src/routes/inspectionCriteriaRoutes'));
+app.use('/api/schedules', require('./src/routes/scheduleRoutes'));
+
+// =====================
+// HEALTH CHECK
+// =====================
+app.get('/api/health', (req, res) => {
+  res.status(200).json({
+    status: 'OK',
+    message: 'Server is running',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// =====================
+// 404 HANDLER
+// =====================
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: 'Route not found'
+  });
+});
+
+// =====================
+// ERROR HANDLER
+// =====================
+app.use((err, req, res, next) => {
+  console.error('Error:', err);
+
+  res.status(err.statusCode || 500).json({
+    success: false,
+    message: err.message || 'Internal Server Error',
+    ...(process.env.NODE_ENV === 'development' && { error: err })
+  });
+});
+
+// =====================
+// START SERVER
+// =====================
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV}`);
+});

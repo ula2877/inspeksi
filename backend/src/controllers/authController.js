@@ -1,0 +1,243 @@
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const pool = require('../config/database');
+
+const login = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+
+    const [users] = await pool.query(
+      'SELECT id, name, nip, email, password, role FROM users WHERE email = ?',
+      [email]
+    );
+
+    if (users.length === 0) {
+      return res.status(401).json({
+        success: false,
+        message: 'Email atau password salah'
+      });
+    }
+
+    const user = users[0];
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        success: false,
+        message: 'Email atau password salah'
+      });
+    }
+
+    // Ambil lab dari tabel laboratories tempat kalab ini terdaftar
+    let laboratory_id = null;
+    let lab_name = null;
+
+    let column = null;
+
+    if (user.role === "kalab") {
+      column = "kalab_id";
+    } else if (user.role === "plp") {
+      column = "plp_id";
+    } else if (user.role === "teknisi") {
+      column = "teknisi_id";
+    }
+
+    if (column) {
+      const [labs] = await pool.query(
+        `SELECT id, nama_lab
+     FROM laboratories
+     WHERE ${column} = ?`,
+        [user.id]
+      );
+
+      if (labs.length > 0) {
+        laboratory_id = labs[0].id;
+        lab_name = labs[0].nama_lab;
+      }
+    }
+
+    const token = jwt.sign(
+      {
+        id: user.id,
+        name: user.name,
+        nip: user.nip,
+        email: user.email,
+        role: user.role,
+        laboratory_id,
+        lab_name
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: 'Login berhasil',
+      data: {
+        user: {
+          id: user.id,
+          name: user.name,
+          nip: user.nip,
+          email: user.email,
+          role: user.role,
+          laboratory_id,
+          lab_name
+        },
+        token
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const getProfile = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+
+    const [users] = await pool.query(
+      'SELECT id, name, nip, email, role, created_at FROM users WHERE id = ?',
+      [userId]
+    );
+
+    if (users.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'User tidak ditemukan'
+      });
+    }
+
+    const user = users[0];
+
+    let laboratory_id = null;
+    let lab_name = null;
+
+    let column = null;
+
+    if (user.role === "kalab") {
+      column = "kalab_id";
+    } else if (user.role === "plp") {
+      column = "plp_id";
+    } else if (user.role === "teknisi") {
+      column = "teknisi_id";
+    }
+
+    if (column) {
+      const [labs] = await pool.query(
+        `SELECT id, nama_lab
+     FROM laboratories
+     WHERE ${column} = ?`,
+        [user.id]
+      );
+
+      if (labs.length > 0) {
+        laboratory_id = labs[0].id;
+        lab_name = labs[0].nama_lab;
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      data: { ...user, laboratory_id, lab_name }
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const updateProfile = async (req, res, next) => {
+  try {
+    const { name, email } = req.body;
+
+    await pool.query(
+      `UPDATE users
+       SET name = ?, email = ?
+       WHERE id = ?`,
+      [name, email, req.user.id]
+    );
+
+    const [rows] = await pool.query(
+      `SELECT id, name, email, nip, role
+       FROM users
+       WHERE id = ?`,
+      [req.user.id]
+    );
+
+    res.json({
+      success: true,
+      data: rows[0],
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const changePassword = async (req, res, next) => {
+  try {
+    const { oldPassword, newPassword, confirmPassword } = req.body;
+
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password lama, password baru, dan konfirmasi password wajib diisi'
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password baru minimal 6 karakter'
+      });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Konfirmasi password baru tidak sesuai'
+      });
+    }
+
+    const [users] = await pool.query(
+      'SELECT id, password FROM users WHERE id = ?',
+      [req.user.id]
+    );
+
+    if (users.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'User tidak ditemukan'
+      });
+    }
+
+    const isPasswordValid = await bcrypt.compare(oldPassword, users[0].password);
+
+    if (!isPasswordValid) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password lama tidak sesuai'
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await pool.query(
+      'UPDATE users SET password = ? WHERE id = ?',
+      [hashedPassword, req.user.id]
+    );
+
+    res.status(200).json({
+      success: true,
+      message: 'Password berhasil diubah'
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = {
+  login,
+  getProfile,
+  updateProfile,
+  changePassword
+};
