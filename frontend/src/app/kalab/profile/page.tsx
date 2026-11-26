@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { UserCircle, Mail, Fingerprint, Shield, FlaskConical, Pencil, X, Check } from "lucide-react";
+import { UserCircle, Mail, Fingerprint, Shield, FlaskConical, Pencil, X, Check, Eye, EyeOff, KeyRound, Loader2 } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import StatusBadge from "@/components/admin/StatusBadge";
-import { getProfile, updateProfile } from "@/services/profile";
+import { getProfile, updateProfile, changePassword } from "@/services/profile";
 import type { Profile } from "@/types/admin";
 
 export default function KalabProfilePage() {
@@ -15,6 +16,15 @@ export default function KalabProfilePage() {
   const [saving, setSaving] = useState(false);
   const [editName, setEditName] = useState("");
   const [editEmail, setEditEmail] = useState("");
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showOld, setShowOld] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [passwordErrors, setPasswordErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     getProfile()
@@ -62,6 +72,62 @@ export default function KalabProfilePage() {
     }
   };
 
+  const openPasswordModal = () => {
+    setOldPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+    setShowOld(false);
+    setShowNew(false);
+    setShowConfirm(false);
+    setPasswordErrors({});
+    setShowPasswordModal(true);
+  };
+
+  const closePasswordModal = () => {
+    if (changingPassword) return;
+    setShowPasswordModal(false);
+    setOldPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+    setShowOld(false);
+    setShowNew(false);
+    setShowConfirm(false);
+    setPasswordErrors({});
+  };
+
+  const handleChangePassword = async () => {
+    const errs: Record<string, string> = {};
+    if (!oldPassword) errs.oldPassword = "Password lama wajib diisi";
+    if (!newPassword) errs.newPassword = "Password baru wajib diisi";
+    else if (newPassword.length < 6) errs.newPassword = "Password baru minimal 6 karakter";
+    if (!confirmPassword) errs.confirmPassword = "Konfirmasi password wajib diisi";
+    else if (newPassword && confirmPassword !== newPassword) errs.confirmPassword = "Konfirmasi password tidak sesuai";
+    setPasswordErrors(errs);
+    if (Object.keys(errs).length > 0) return;
+
+    setChangingPassword(true);
+    try {
+      await changePassword({ oldPassword, newPassword, confirmPassword });
+      toast.success("Password berhasil diubah");
+      setShowPasswordModal(false);
+      setOldPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setShowOld(false);
+      setShowNew(false);
+      setShowConfirm(false);
+      setPasswordErrors({});
+    } catch (err: any) {
+      const message = err.response?.data?.message || "Gagal mengubah password";
+      toast.error(message);
+      if (message.toLowerCase().includes("lama")) {
+        setPasswordErrors({ oldPassword: message });
+      }
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="space-y-4 animate-pulse">
@@ -103,12 +169,20 @@ export default function KalabProfilePage() {
             </div>
           </div>
           {!editing ? (
-            <button
-              onClick={startEditing}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 text-white/50 text-sm font-medium hover:text-white hover:bg-white/10 transition-all border border-white/10"
-            >
-              <Pencil className="w-4 h-4" /> Edit
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={openPasswordModal}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 text-white/50 text-sm font-medium hover:text-white hover:bg-white/10 transition-all border border-white/10"
+              >
+                <KeyRound className="w-4 h-4" /> Ubah Password
+              </button>
+              <button
+                onClick={startEditing}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 text-white/50 text-sm font-medium hover:text-white hover:bg-white/10 transition-all border border-white/10"
+              >
+                <Pencil className="w-4 h-4" /> Edit
+              </button>
+            </div>
           ) : (
             <div className="flex items-center gap-2">
               <button
@@ -151,6 +225,140 @@ export default function KalabProfilePage() {
           ))}
         </div>
       </div>
+
+      <AnimatePresence>
+        {showPasswordModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            onClick={closePasswordModal}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="w-full max-w-md rounded-2xl bg-[#1E293B] border border-white/10 p-6 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-[#FBBF24]/10 flex items-center justify-center">
+                    <KeyRound className="w-5 h-5 text-[#FBBF24]" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-white">Ubah Password</h3>
+                </div>
+                <button
+                  onClick={closePasswordModal}
+                  disabled={changingPassword}
+                  className="p-1 rounded-lg hover:bg-white/5 text-white/50 hover:text-white transition-colors disabled:opacity-50"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="space-y-4 mb-6">
+                <div>
+                  <label className="block text-sm text-white/70 mb-2">Password Lama</label>
+                  <div className="relative">
+                    <input
+                      type={showOld ? "text" : "password"}
+                      value={oldPassword}
+                      onChange={(e) => {
+                        setOldPassword(e.target.value);
+                        if (passwordErrors.oldPassword) setPasswordErrors((p) => ({ ...p, oldPassword: "" }));
+                      }}
+                      disabled={changingPassword}
+                      className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#FBBF24]/40 pr-10 disabled:opacity-50"
+                      placeholder="Masukkan password lama"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowOld((v) => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60"
+                      tabIndex={-1}
+                    >
+                      {showOld ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  {passwordErrors.oldPassword && <p className="text-xs text-red-400 mt-1">{passwordErrors.oldPassword}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-sm text-white/70 mb-2">Password Baru</label>
+                  <div className="relative">
+                    <input
+                      type={showNew ? "text" : "password"}
+                      value={newPassword}
+                      onChange={(e) => {
+                        setNewPassword(e.target.value);
+                        if (passwordErrors.newPassword) setPasswordErrors((p) => ({ ...p, newPassword: "" }));
+                      }}
+                      disabled={changingPassword}
+                      className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#FBBF24]/40 pr-10 disabled:opacity-50"
+                      placeholder="Masukkan password baru"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNew((v) => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60"
+                      tabIndex={-1}
+                    >
+                      {showNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  {passwordErrors.newPassword && <p className="text-xs text-red-400 mt-1">{passwordErrors.newPassword}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-sm text-white/70 mb-2">Konfirmasi Password Baru</label>
+                  <div className="relative">
+                    <input
+                      type={showConfirm ? "text" : "password"}
+                      value={confirmPassword}
+                      onChange={(e) => {
+                        setConfirmPassword(e.target.value);
+                        if (passwordErrors.confirmPassword) setPasswordErrors((p) => ({ ...p, confirmPassword: "" }));
+                      }}
+                      disabled={changingPassword}
+                      className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-[#FBBF24]/40 pr-10 disabled:opacity-50"
+                      placeholder="Konfirmasi password baru"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirm((v) => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60"
+                      tabIndex={-1}
+                    >
+                      {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  {passwordErrors.confirmPassword && <p className="text-xs text-red-400 mt-1">{passwordErrors.confirmPassword}</p>}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-3">
+                <button
+                  onClick={closePasswordModal}
+                  disabled={changingPassword}
+                  className="px-4 py-2 rounded-xl text-sm font-medium text-white/70 hover:text-white hover:bg-white/5 transition-all disabled:opacity-50"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={handleChangePassword}
+                  disabled={changingPassword}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500/10 text-emerald-400 text-sm font-medium hover:bg-emerald-500/20 transition-all border border-emerald-500/20 disabled:opacity-50"
+                >
+                  {changingPassword && <Loader2 className="w-4 h-4 animate-spin" />}
+                  {changingPassword ? "Menyimpan..." : "Simpan Password"}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

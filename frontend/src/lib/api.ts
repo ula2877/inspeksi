@@ -30,9 +30,13 @@ api.interceptors.response.use(
   (err) => {
     console.error(`[API] ${err.config?.method?.toUpperCase()} ${err.config?.url}`, err.response?.data);
     if (err.response?.status === 401 && typeof window !== 'undefined') {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = `${window.location.origin}/dev/siminspeksi/admin`;
+      const requestUrl = err.config?.url || "";
+      const isLoginRequest = requestUrl.includes("/auth/login");
+      if (!isLoginRequest) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = `${window.location.origin}/admin`;
+      }
     }
     return Promise.reject(err);
   }

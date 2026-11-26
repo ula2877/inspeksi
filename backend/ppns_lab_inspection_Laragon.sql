@@ -713,16 +713,16 @@ INSERT INTO `laboratories` (`id`, `nama_lab`, `lokasi`, `kalab_id`, `plp_id`, `t
 
 -- Dumping data for table ppns_lab_inspection.users: ~10 rows (approximately)
 INSERT INTO `users` (`id`, `name`, `nip`, `email`, `password`, `role`, `created_at`, `updated_at`) VALUES
-	(1, 'Admin PPNS', '', 'admin@ppns.ac.id', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcg7b3XeKeUxWdeS86E36CHqg9C', 'admin', '2026-06-03 04:22:18', '2026-06-03 04:22:18'),
-	(3, 'Admin Ganteng', '0000000022', 'admin3@ppns.ac.id', '$2a$10$PxfyJNeYy3TA6IRaEWWfluf9N6r2f8VrJC4RpepXt/2pxHyiKdM4a', 'admin', '2026-06-03 04:22:28', '2026-06-26 06:27:00'),
-	(11, 'Vivin Setiani, S.T., M.Eng', '198909162015042020', 'kalab3@ppns.ac.id', '$2a$10$11BPO6ufPK8dqkJRu71w8O.SRwoqPOt8IwG7VKZJgN4q8d7Xi2I/2', 'kalab', '2026-06-04 06:28:02', '2026-06-26 03:40:19'),
-	(15, 'Medi', '123456789', 'Medi@ppns.ac.id', '$2a$10$pTCx2QH/CgpDJICVA8asqurY4Jm2g.6L8AhA7GwxptyXez0bHVAAC', 'kalab', '2026-06-17 08:03:30', '2026-06-17 08:03:30'),
-	(16, 'sa', '112345788', 'sa123@gmail.com', '$2a$10$R5zrPcwBe31ABnTrTomOKemeXV4o/wqVgIJqEyyFpayPdtGMPrNYS', 'kalab', '2026-06-22 06:26:53', '2026-06-22 06:26:53'),
-	(23, 'PLP 1', '123456', 'plp1@gmail.com', '$2a$10$09ZzOvEBmPnvBj8XhDaDU.VlPUUJqMZD.TWDAdZpryEgWA.KTXYFi', 'plp', '2026-06-22 07:23:07', '2026-06-22 07:23:07'),
-	(24, 'PLP 2', '123456', 'plp2@gmail.com', '$2a$10$B8ZLZpj/CLKbSdWB59JlvuR4xrXm5aZG.QRNtYPaqzZbrxG9leazO', 'plp', '2026-06-22 07:23:33', '2026-07-01 03:32:12'),
-	(25, 'saep', '1122334455', 'saep123@gmail.com', '$2a$10$zTremhOnh0L0lS/92ahZte66uIIfYTQudypUK5rYaYiG4SmgueIDq', 'plp', '2026-06-22 07:24:08', '2026-06-22 07:24:08'),
-	(27, 'smean', '11223344', 'samean@ppns.ac.id', '$2a$10$EYqx3Yz4D/rBAkz1UXcheuXRNHcZNnU5pPDpjtrBAFFaWR0ylq1Ge', 'admin', '2026-06-26 03:21:51', '2026-06-26 03:21:51'),
-	(28, 'teknisiiii', '11223344', 'teknisi1@gmail.com', '$2a$10$Ji8hwKWb2Q6yB6FCzb0TvedFaIFcfzq3Zt8hXvvSBbMK.HZBwZ4ii', 'teknisi', '2026-07-01 02:48:43', '2026-07-01 05:01:19');
+	(1, 'Admin PPNS', '', 'admin@ppns.ac.id', '$2a$10$gZ/MliI01Pkb2AWKqXNiOuNdpDHnE..10CFTcOyk27kWqpVdU0/d.', 'admin', '2026-06-03 04:22:18', '2026-06-03 04:22:18'),
+	(3, 'Admin Ganteng', '0000000022', 'admin3@ppns.ac.id', '$2a$10$gZ/MliI01Pkb2AWKqXNiOuNdpDHnE..10CFTcOyk27kWqpVdU0/d.', 'admin', '2026-06-03 04:22:28', '2026-06-26 06:27:00'),
+	(11, 'Vivin Setiani, S.T., M.Eng', '198909162015042020', 'kalab3@ppns.ac.id', '$2a$10$gZ/MliI01Pkb2AWKqXNiOuNdpDHnE..10CFTcOyk27kWqpVdU0/d.', 'kalab', '2026-06-04 06:28:02', '2026-06-26 03:40:19'),
+	(15, 'Medi', '123456789', 'Medi@ppns.ac.id', '$2a$10$gZ/MliI01Pkb2AWKqXNiOuNdpDHnE..10CFTcOyk27kWqpVdU0/d.', 'kalab', '2026-06-17 08:03:30', '2026-06-17 08:03:30'),
+	(16, 'sa', '112345788', 'sa123@gmail.com', '$2a$10$gZ/MliI01Pkb2AWKqXNiOuNdpDHnE..10CFTcOyk27kWqpVdU0/d.', 'kalab', '2026-06-22 06:26:53', '2026-06-22 06:26:53'),
+	(23, 'PLP 1', '123456', 'plp1@gmail.com', '$2a$10$gZ/MliI01Pkb2AWKqXNiOuNdpDHnE..10CFTcOyk27kWqpVdU0/d.', 'plp', '2026-06-22 07:23:07', '2026-06-22 07:23:07'),
+	(24, 'PLP 2', '123456', 'plp2@gmail.com', '$2a$10$gZ/MliI01Pkb2AWKqXNiOuNdpDHnE..10CFTcOyk27kWqpVdU0/d.', 'plp', '2026-06-22 07:23:33', '2026-07-01 03:32:12'),
+	(25, 'saep', '1122334455', 'saep123@gmail.com', '$2a$10$gZ/MliI01Pkb2AWKqXNiOuNdpDHnE..10CFTcOyk27kWqpVdU0/d.', 'plp', '2026-06-22 07:24:08', '2026-06-22 07:24:08'),
+	(27, 'smean', '11223344', 'samean@ppns.ac.id', '$2a$10$gZ/MliI01Pkb2AWKqXNiOuNdpDHnE..10CFTcOyk27kWqpVdU0/d.', 'admin', '2026-06-26 03:21:51', '2026-06-26 03:21:51'),
+	(28, 'teknisiiii', '11223344', 'teknisi1@gmail.com', '$2a$10$gZ/MliI01Pkb2AWKqXNiOuNdpDHnE..10CFTcOyk27kWqpVdU0/d.', 'teknisi', '2026-07-01 02:48:43', '2026-07-01 05:01:19');
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
